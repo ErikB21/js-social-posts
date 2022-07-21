@@ -55,20 +55,92 @@ const posts = [
         "created": "2021-03-05"
     }
 ];
-
+//richiamo la funzione creazione DOM
 const containerDom = document.getElementById('container');
 
 posts.forEach((post) =>{
+    createTemplate(post);
+});
+
+
+
+const jsLikeButtonsDom = document.getElementsByClassName('js-like-button');
+const likedArray = [];
+
+//per aggiungere mi piace e nel caso toglierlo
+//approccio con data attribute
+for(let i = 0; i < jsLikeButtonsDom.length; i++){
+
+    jsLikeButtonsDom[i].addEventListener('click', function (event){
+
+        event.preventDefault();
+        const postid = this.getAttribute('data-postid');
+        
+        //tolgo il mi piace
+        if(likedArray.includes(postid)){
+
+            this.classList.remove('like-button--liked');
+            const likeCounterDom = document.getElementById('like-counter-' + postid);
+            likeCounterDom.innerText = parseInt(likeCounterDom.innerText) - 1;
+            
+            let positionElement;
+
+            for(let i = 0; i< likedArray.length; i++){
+                if(likedArray[i] == postid){
+                    positionElement = i;
+                }
+            }
+
+            likedArray.splice(positionElement, 1);
+
+        }else{//rimetto il mi piace
+            this.classList.add('like-button--liked');
+            const likeCounterDom = document.getElementById('like-counter-' + postid);
+            likeCounterDom.innerText = parseInt(likeCounterDom.innerText) + 1;
+            likedArray.push(postid);
+        }
+
+        
+    });
+}
+
+
+//per invertire la data
+function formatdate(date){
+
+    return date.split('-').reverse().join('/');
+
+}
+
+//per cambiare l'immagine se non è presente
+function fallbackAvatar (username){
+
+    const nameParts = username.split(' ');
+
+    const iniziali = nameParts.map(part => part.charAt(0).toUpperCase());
+
+    return `<div class="profile-pic-default">${iniziali.join('')}</div>`;
+}
+
+
+function defaultImage(author){
+    return `<img class="profile-pic" src="${author.image}" alt="${author.name}">`;
+}
+
+
+
+//creo una funzione che quando richiamata la stamperà nel DOM 
+function createTemplate(post){
     containerDom.innerHTML +=    
 `<div class="post">
     <div class="post__header">
         <div class="post-meta">                    
             <div class="post-meta__icon">
-                <img class="profile-pic" src=${post.author.image} alt="Phil Mangione">                    
+                ${post.author.image?defaultImage(post.author):fallbackAvatar(post.author.name)}
             </div>
             <div class="post-meta__data">
                 <div class="post-meta__author">${post.author.name}</div>
-                <div class="post-meta__time">${post.created}</div>
+                <div class="post-meta__time">${formatdate(post.created)}</div>
             </div>                    
         </div>
     </div>
@@ -79,16 +151,20 @@ posts.forEach((post) =>{
     <div class="post__footer">
         <div class="likes js-likes">
             <div class="likes__cta">
-                <a class="like-button  js-like-button" href="#" data-postid="1">
+                <a class="like-button  js-like-button" href="#" data-postid=${post.id}>
                     <i class="like-button__icon fas fa-thumbs-up" aria-hidden="true"></i>
                     <span class="like-button__label">Mi Piace</span>
                 </a>
             </div>
             <div class="likes__counter">
-                Piace a <b id="like-counter-1" class="js-likes-counter">${post.likes}</b> persone
+                Piace a <b id="like-counter-${post.id}" class="js-likes-counter">${post.likes}</b> persone
             </div>
         </div> 
     </div>            
 </div>`;
-});
+}
+
+
+
+
 
